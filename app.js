@@ -1,29 +1,38 @@
 const express = require('express')
 const adhan = require('adhan')
 const moment = require('moment-timezone')
+const conf = require('./prayerConfiguration')
+
 const app = express()
 const port = 3000
+
 const timezone = "Asia/Jakarta"
 
-app.get('/', (req, res) => {
-   var lat = '-6.385589';
-   var long = '106.830711';
-   var coordinates = new adhan.Coordinates(lat, long);
-   var date = new Date();
-   var params = adhan.CalculationMethod.MuslimWorldLeague();
-   params.madhab = adhan.Madhab.Shafi
-   params.fajrAngle = 20.0;
-   params.ishaAngle = 18.0;
-   params.adjustments.fajr = 2;
-   params.adjustments.dhuhr = 2;
-   params.adjustments.asr = 2;
-   params.adjustments.maghrib = 2;
-   params.adjustments.isha = 2;
-   params.polarCircleResolution = adhan.PolarCircleResolution.AqrabYaum;
+app.get('/api/adhan', (req, res) => {
+   const lat = req.query.lat;
+   const long = req.query.long;
 
-   var prayerTimes = new adhan.PrayerTimes(coordinates, date, params);
+   if (! req.params || !lat || !long) {
+      return res
+          .status(400)
+          .send({
+         "status": "error",
+         "message": "Invalid coordinate parameter"
+      });
+   }
 
-   res.send(
+   const coordinate = new adhan.Coordinates(lat, long);
+   const date = new Date();
+
+   const prayerTimes = new adhan.PrayerTimes(
+       coordinate,
+       date,
+       conf.getPrayerConfiguration()
+   );
+
+   return res
+       .status(200)
+       .send(
        {
           "summary": {
              "location": {
@@ -33,13 +42,14 @@ app.get('/', (req, res) => {
              "date": moment(date).tz('Asia/Jakarta').format('YYYY-MM-DD'),
              "prayerTime": {
                 "fajr": moment(prayerTimes.fajr).tz(timezone).format('HH:mm'),
+                "sunrise": moment(prayerTimes.sunrise).tz(timezone).format('HH:mm'),
                 "dzuhur": moment(prayerTimes.dhuhr).tz(timezone).format('HH:mm'),
                 "ashar": moment(prayerTimes.asr).tz(timezone).format('HH:mm'),
                 "maghrib": moment(prayerTimes.maghrib).tz(timezone).format('HH:mm'),
                 "isya": moment(prayerTimes.isha).tz(timezone).format('HH:mm')
              }
           },
-          "result": prayerTimes,
+          "detail": prayerTimes,
        }
    )
 });

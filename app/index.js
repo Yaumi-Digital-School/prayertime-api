@@ -3,12 +3,12 @@ const adhan = require('adhan')
 const moment = require('moment-timezone')
 const conf = require('./prayerConfiguration')
 
-const app = express()
+const index = express()
 const port = 3000
 
 const timezone = "Asia/Jakarta"
 
-app.get('/api/adhan', (req, res) => {
+index.get('/api/adhan', (req, res) => {
    const lat = req.query.lat;
    const long = req.query.long;
 
@@ -54,6 +54,6 @@ app.get('/api/adhan', (req, res) => {
    )
 });
 
-app.listen(port, () => {
+index.listen(port, () => {
     console.log(`Prayertime listening at http://localhost:${port}`);
 })

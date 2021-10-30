@@ -4,7 +4,7 @@ const moment = require('moment-timezone')
 const conf = require('./prayerConfiguration')
 
 const index = express()
-const port = 3000
+const port = 3030
 
 const timezone = "Asia/Jakarta"
 
